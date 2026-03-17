@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Product - CampusKart{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0"><i class="fas fa-edit"></i> Edit Product</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Product Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="text-danger">{{ form.category.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.price.id_for_label }}" class="form-label">Price (&#8377;)</label>
+                                {{ form.price }}
+                                {% if form.price.errors %}
+                                    <div class="text-danger">{{ form.price.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.condition.id_for_label }}" class="form-label">Condition</label>
+                                {{ form.condition }}
+                                {% if form.condition.errors %}
+                                    <div class="text-danger">{{ form.condition.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.image.id_for_label }}" class="form-label">Product Image</label>
+                            
+                            {% if product.image %}
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Current Image:</label>
+                                    <div>
+                                        <img src="{{ product.image.url }}" alt="Current product image" 
+                                             class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                                    </div>
+                                    <small class="text-muted">Leave empty to keep current image</small>
+                                </div>
+                            {% endif %}
+                            
+                            {{ form.image }}
+                            {% if form.image.errors %}
+                                <div class="text-danger">{{ form.image.errors }}</div>
+                            {% endif %}
+                            
+                            <div class="mt-2">
+                                <img id="imagePreview" src="#" alt="Preview" 
+                                     style="max-width: 200px; max-height: 200px; display: none;" class="img-thumbnail">
+                            </div>
+                            <div class="form-text">Upload a new image only if you want to change the current one.</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> Update Product
+                            </button>
+                            <a href="{% url 'my_products' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('id_image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const preview = document.getElementById('imagePreview');
+            preview.src = event.target.result;
+            preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+
+<style>
+.img-thumbnail {
+    border-radius: 10px;
+    margin-top: 10px;
+}
+.form-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+</style>
+{% endblock %}

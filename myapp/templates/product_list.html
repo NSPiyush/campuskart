@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Products - CampusKart{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 style="color:white; font-weight:bold;" class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" id="filterForm">
+                        <div class="mb-3">
+                            <label class="form-label">Search</label>
+                            <input type="text" name="q" class="form-control" placeholder="Search products..." value="{{ request.GET.q }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select name="category" class="form-select" id="categoryFilter">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"i" %}selected{% endif %}>
+                                        {{ category.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Condition</label>
+                            <select name="condition" class="form-select">
+                                <option value="">All Conditions</option>
+                                <option value="new" {% if request.GET.condition == 'new' %}selected{% endif %}>Brand New</option>
+                                <option value="like_new" {% if request.GET.condition == 'like_new' %}selected{% endif %}>Like New</option>
+                                <option value="good" {% if request.GET.condition == 'good' %}selected{% endif %}>Good</option>
+                                <option value="fair" {% if request.GET.condition == 'fair' %}selected{% endif %}>Fair</option>
+                                <option value="poor" {% if request.GET.condition == 'poor' %}selected{% endif %}>Poor</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Price Range</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="number" name="min_price" class="form-control" placeholder="Min" value="{{ request.GET.min_price }}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="max_price" class="form-control" placeholder="Max" value="{{ request.GET.max_price }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                        <a href="{% url 'product_list' %}" class="btn btn-outline-secondary w-100 mt-2">Clear Filters</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4>Available Items ({{ products.count }})</h4>
+                <div class="sort-dropdown">
+                    <select class="form-select" id="sortSelect">
+                        <option value="newest">Newest First</option>
+                        <option value="price_low">Price: Low to High</option>
+                        <option value="price_high">Price: High to Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                {% for product in products %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 product-card">
+                            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ product.name|truncatechars:30 }}</h5>
+                                <p class="card-text text-muted">{{ product.description|truncatechars:60 }}</p>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="h5 text-primary">&#8377;{{ product.price }}</span>
+                                    <span class="badge bg-info">{{ product.get_condition_display }}</span>
+                                </div>
+                                <p class="small text-muted mb-2">
+                                    <i class="fas fa-user"></i> {{ product.seller.username }}<br>
+                                    <i class="fas fa-tag"></i> {{ product.category.name }}
+                                </p>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <a href="{% url 'product_detail' product.id %}" class="btn btn-primary w-100">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-box-open fa-3x mb-3"></i>
+                            <h4>No Products Found</h4>
+                            <p>Try adjusting your filters or check back later for new listings.</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if products.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if products.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ products.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in products.paginator.page_range %}
+                            {% if products.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                                <li class="page-item"><a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if products.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ products.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#sortSelect').on('change', function() {
+        const sortValue = $(this).val();
+        const currentUrl = new URL(window.location.href);
+        
+        currentUrl.searchParams.delete('sort');
+        
+        if (sortValue !== 'newest') {
+            currentUrl.searchParams.set('sort', sortValue);
+        }
+        
+        window.location.href = currentUrl.toString();
+    });
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const sortParam = urlParams.get('sort');
+    if (sortParam) {
+        $('#sortSelect').val(sortParam);
+    }
+});
+</script>
+{% endblock %}

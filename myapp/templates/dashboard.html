@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - CampusKart{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Welcome, {{ user.username }}!</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 style="color:white; font-weight:bold;">Items Selling</h5>
+                    <h2 style="color:white; font-weight:bold;">{{ selling_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 style="color:white; font-weight:bold;">Items Buying</h5>
+                    <h2 style="color:white; font-weight:bold;">{{ buying_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 style="color:white; font-weight:bold;">Requests Received</h5>
+                    <h2 style="color:white; font-weight:bold;">{{ received_count }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 style="color:white; font-weight:bold;" class="mb-0">Items You're Selling</h5>
+                    <a href="{% url 'add_product' %}" class="btn btn-sm btn-light">+ Add New</a>
+                </div>
+                <div class="card-body">
+                    {% if selling %}
+                        <div class="list-group">
+                            {% for product in selling|slice:":5" %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ product.name }}</h6>
+                                            <small>&#8377;{{ product.price }} | {{ product.get_condition_display }}</small>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-{% if product.is_sold %}secondary{% else %}success{% endif %} me-2">
+                                                {% if product.is_sold %}Sold{% else %}Available{% endif %}
+                                            </span>
+                                            <a href="{% url 'edit_product' product.id %}" class="btn btn-sm btn-outline-warning">Edit</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if selling.count > 5 %}
+                            <a href="{% url 'my_products' %}" class="btn btn-outline-primary mt-3">View All ({{ selling.count }})</a>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted">You haven't listed any items for sale.</p>
+                        <a href="{% url 'add_product' %}" class="btn btn-primary">Sell Your First Item</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 style="color:white; font-weight:bold;" class="mb-0">Items You're Buying</h5>
+                </div>
+                <div class="card-body">
+                    {% if buying %}
+                        <div class="list-group">
+                            {% for request in buying|slice:":5" %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ request.product.name }}</h6>
+                                            <small>Seller: {{ request.product.seller.username }} | &#8377;{{ request.product.price }}</small>
+                                        </div>
+                                        <span class="badge bg-{% if request.status == 'pending' %}warning{% elif request.status == 'accepted' %}success{% elif request.status == 'rejected' %}danger{% else %}secondary{% endif %}">
+                                            {{ request.status }}
+                                        </span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">You haven't requested any items yet.</p>
+                        <a href="{% url 'product_list' %}" class="btn btn-success">Browse Items</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if received %}
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Requests for Your Items</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Buyer</th>
+                                <th>Message</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in received|slice:":5" %}
+                                <tr>
+                                    <td>{{ request.product.name }}</td>
+                                    <td>{{ request.buyer.username }}</td>
+                                    <td>{{ request.message|truncatechars:30 }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if request.status == 'pending' %}warning{% elif request.status == 'accepted' %}success{% else %}secondary{% endif %}">
+                                            {{ request.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'manage_requests' %}" class="btn btn-sm btn-primary">Manage</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{% url 'manage_requests' %}" class="btn btn-outline-info">View All Requests</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
