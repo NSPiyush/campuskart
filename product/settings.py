@@ -54,7 +54,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'product.wsgi.application'
 
 DATABASES = {
-    'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+    'default': dj_database_url.config(
+        env='DATABASE_URL',
+        default='sqlite:///db.sqlite3'
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
